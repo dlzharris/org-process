@@ -58,23 +58,41 @@ def sum_areas(peak_data_list, low_index, high_index):
     return sum(areas)
 
 
-def get_istd_area(peak_data_list, istd_rt):
+def get_istd_area(peak_data_list, istd_rt_target, istd_rt_low, istd_rt_high, istd_area_target, istd_area_tolerance):
     """
     Get the peak area for the given internal standard
     :param peak_data_list: Peak area list for the sample
     :param istd_rt: Retention time for the given internal standard
     :return: Peak area integration for the internal standard
     """
-    # TODO: get_istd_area(peak_data_list, istd_rt)
-    pass
+    # Calculate acceptable upper and lower limits
+    lower_limit = istd_area_target - istd_area_tolerance
+    upper_limit = istd_area_target + istd_area_tolerance
+
+    # Find all peaks in istd range
+    istd_peak_list = [x[4] for x in peak_data_list if istd_rt_low >= x[2] >= istd_rt_high and lower_limit <= x[4] <= upper_limit]
+
+    # Test for presence of a single acceptable peak
+    if len(istd_peak_list) == 0:
+        # TODO: Error signal for no istds found
+        print "No acceptable internal standard peaks found"
+    elif len(istd_peak_list) > 1:
+        # TODO: Error signal for multiple istds found
+        print "More than one acceptable internal standard peak found"
+    else:
+        istd_area = istd_peak_list[0]
+
+    return istd_area
 
 
 def main():
     """Run the org-process app."""
     FILE = r'C:\code\projects\org-process\extras\analysis-reports\16_0475_1_AnalysisReport.xls'
     sample_name, analysis_time, peak_data = get_data_from_report(FILE)
-    print peak_data
-    print sum_areas(peak_data, 0, 29)
+
+    # User inputs
+    #
+
 
 
 if __name__ == "__main__":
