@@ -1,4 +1,5 @@
 import xlrd
+import opcl
 import opx
 
 
@@ -41,48 +42,15 @@ def get_data_from_report(file):
     return sample_name, analysis_time, peak_data
 
 
-def get_bounding_indexes():
-    # TODO: get_bounding_indexes()
+def check_dir_validity(dir_path):
+    # TODO: check_dir_validity(dir_path)
+    # Check that the supplied folder has the required blanks and other QC samples.
     pass
 
 
-def sum_areas(peak_data_list, low_index, high_index):
-    """
-    Sums the peak areas given a set of bounding indices for the peak data list
-    :param peak_data_list: Peak area list for the sample
-    :param low_index: Index of first peak to sum
-    :param high_index: Index of final peak in list to sum
-    :return: Total area between the bounding indices.
-    """
-    areas = [x[4] for x in peak_data_list[low_index:high_index + 1]]
-    return sum(areas)
-
-
-def get_istd_area(peak_data_list, istd_rt_target, istd_rt_low, istd_rt_high, istd_area_target, istd_area_tolerance):
-    """
-    Get the peak area for the given internal standard
-    :param peak_data_list: Peak area list for the sample
-    :param istd_rt: Retention time for the given internal standard
-    :return: Peak area integration for the internal standard
-    """
-    # Calculate acceptable upper and lower limits
-    lower_limit = istd_area_target - istd_area_tolerance
-    upper_limit = istd_area_target + istd_area_tolerance
-
-    # Find all peaks in istd range
-    istd_peak_list = [x[4] for x in peak_data_list if istd_rt_low >= x[2] >= istd_rt_high and lower_limit <= x[4] <= upper_limit]
-
-    # Test for presence of a single acceptable peak
-    if len(istd_peak_list) == 0:
-        # TODO: Error signal for no istds found
-        print "No acceptable internal standard peaks found"
-    elif len(istd_peak_list) > 1:
-        # TODO: Error signal for multiple istds found
-        print "More than one acceptable internal standard peak found"
-    else:
-        istd_area = istd_peak_list[0]
-
-    return istd_area
+def get_bounding_indexes():
+    # TODO: get_bounding_indexes()
+    pass
 
 
 def main():

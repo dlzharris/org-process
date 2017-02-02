@@ -1,5 +1,12 @@
-# Define constants
+__author__ = 'Daniel Harris'
+__date__ = '02 February 2017'
+__email__ = 'daniel.harris@dpi.nsw.gov.au'
+__version__ = '0.1'
 
+
+###############################################################################
+# Constants
+###############################################################################
 # Excel report constants
 SAMPLE_NAME_COLUMN = 21
 SAMPLE_NAME_ROW = 1
