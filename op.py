@@ -16,11 +16,15 @@ class IstdError(Exception):
 # Custom classes
 ###############################################################################
 class BlankAverage:
+    def __init__(self, blank_data, istd_rt_low, istd_rt_hight,
+                 istd_area_target, istd_area_tolerance, low_index, high_index):
+        self.istd = mean([get_istd_area(x, istd_rt_low, istd_rt_hight, istd_area_target, istd_area_tolerance) for x in blank_data])
+        self.area = mean([sum_areas(x, low_index, high_index) for x in blank_data])
 
-    def __init__(self, blank_data):
-        pass
 
-
+###############################################################################
+# Functions
+###############################################################################
 def sum_areas(peak_data_list, low_index, high_index):
     """
     Sums the peak areas given a set of bounding indices for the peak data list
