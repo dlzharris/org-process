@@ -1,5 +1,5 @@
 import xlrd
-import opcl
+import op
 import opx
 
 
@@ -48,18 +48,24 @@ def check_dir_validity(dir_path):
     pass
 
 
-def get_bounding_indexes():
-    # TODO: get_bounding_indexes()
-    pass
-
-
 def main():
     """Run the org-process app."""
     FILE = r'C:\code\projects\org-process\extras\analysis-reports\16_0475_1_AnalysisReport.xls'
     sample_name, analysis_time, peak_data = get_data_from_report(FILE)
 
     # User inputs
-    #
+
+    # Make list of all blank files in directory
+    # Make list of all sample files in directory (includes QC)
+
+    # blank_data_list = []
+    # For each file in BLANKS
+    #    blank = get_data_from_report(file)
+    #    blank_data_list.append(blank)
+    # blank_average = op.BlankAverage(all the stuff)
+
+    # for each sample file in selected directory
+        # calculate sample concentration
 
 
 
