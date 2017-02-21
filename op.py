@@ -18,10 +18,39 @@ class IstdError(Exception):
 # Custom classes
 ###############################################################################
 class BlankAverage:
-    def __init__(self, blank_data, istd_rt_low, istd_rt_hight,
+    def __init__(self, blank_data, istd_rt_low, istd_rt_high,
                  istd_area_target, istd_area_tolerance, low_index, high_index):
-        self.istd = mean([get_istd_area(x, istd_rt_low, istd_rt_hight, istd_area_target, istd_area_tolerance) for x in blank_data])
-        self.area = mean([sum_areas(x, low_index, high_index) for x in blank_data])
+
+        # Create required empty lists
+        areas_c6_c10 = []
+        areas_c10_c16 = []
+        areas_c16_c34 = []
+        areas_c34_c40 = []
+
+        # For each blank item
+        for blank in blank_data:
+            # Find bounding indexes for C6-C10 fraction
+            i_c10 = get_fraction_end_index(blank, opx.C6_C10_END)
+            sum_c6_c10 = sum_areas(blank, 1, i_c10)
+            areas_c6_c10.append(sum_c6_c10)
+            # Find bounding indexes for C10-C16 fraction
+            i_c16 = get_fraction_end_index(blank, opx.C10_C16_END)
+            sum_c10_c16 = sum_areas(blank, i_c10, i_c16)
+            areas_c10_c16.append(sum_c10_c16)
+            # Find bounding indexes for C16-C34 fraction
+            i_c34 = get_fraction_end_index(blank, opx.C16_C34_END)
+            sum_c16_c34 = sum_areas(blank, i_c16, i_c34)
+            areas_c16_c34.append(sum_c16_c34)
+            # Find bounding indexes for C34-C40 fraction
+            i_c40 = get_fraction_end_index(blank, opx.C34_C40_END)
+            sum_c34_c40 = sum_areas(blank, i_c34, i_c40)
+            areas_c34_c40.append(sum_c34_c40)
+
+        self.area_c6_c10 = mean(areas_c6_c10)
+        self.area_c10_c16 = mean(areas_c10_c16)
+        self.area_c16_c34 = mean(areas_c16_c34)
+        self.area_c34_c40 = mean(areas_c34_c40)
+        self.istd = mean([get_istd_area(x, istd_rt_low, istd_rt_high, istd_area_target, istd_area_tolerance) for x in blank_data])
 
 
 ###############################################################################
@@ -66,7 +95,7 @@ def get_istd_area(peak_data_list, istd_rt_low, istd_rt_high, istd_area_target, i
         return istd_peak_list[0]  # istd area
 
 
-def get_fraction_boundary_indexes(peak_data_list, rt_end):
+def get_fraction_end_index(peak_data_list, rt_end):
     """
     Finds the start and end indexes for the peaks list for the retention times wanted
     :param peak_data_list: Peak area list for the sample
@@ -74,10 +103,9 @@ def get_fraction_boundary_indexes(peak_data_list, rt_end):
     :param rt_end: Ending retention time for boundaries
     :return: Tuple containing the starting and ending indexes.
     """
-    #TODO: Get all boundaries for all fractions, or just ends, or just for one fraction? Need to clarify structure.
     # Get the differences for each peak and find the closest to zero that
-    # Get ending index
     end_indexes = [(x[opx.PEAK_LS_IDX], x[opx.PEAK_LS_END] - rt_end) for x in peak_data_list if x[opx.PEAK_LS_END] - rt_end >= 0]
+    # Get ending index
     end_tuple = min(end_indexes, key = lambda i: i[1])
     return end_tuple[0]
 
