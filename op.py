@@ -18,8 +18,7 @@ class IstdError(Exception):
 # Custom classes
 ###############################################################################
 class BlankAverage:
-    def __init__(self, blank_data, istd_rt_low, istd_rt_high,
-                 istd_area_target, istd_area_tolerance, low_index, high_index):
+    def __init__(self, blank_data, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance):
 
         # Create required empty lists
         areas_c6_c10 = []
@@ -50,7 +49,7 @@ class BlankAverage:
         self.area_c10_c16 = mean(areas_c10_c16)
         self.area_c16_c34 = mean(areas_c16_c34)
         self.area_c34_c40 = mean(areas_c34_c40)
-        self.istd = mean([get_istd_area(x, istd_rt_low, istd_rt_high, istd_area_target, istd_area_tolerance) for x in blank_data])
+        self.istd = mean([get_istd_area(x, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance) for x in blank_data])
 
 
 ###############################################################################
@@ -68,7 +67,7 @@ def sum_areas(peak_data_list, low_index, high_index):
     return sum(areas)
 
 
-def get_istd_area(peak_data_list, istd_rt_low, istd_rt_high, istd_area_target, istd_area_tolerance):
+def get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance):
     """
     Get the peak area for the given internal standard
     :param peak_data_list: Peak area list for the sample
@@ -78,6 +77,9 @@ def get_istd_area(peak_data_list, istd_rt_low, istd_rt_high, istd_area_target, i
     :param istd_area_tolerance: Acceptable percent tolerance (expressed as a decimal) for istd area
     :return: Peak area integration for the internal standard
     """
+    # Calculate acceptable retention time window
+    istd_rt_low = istd_rt - istd_rt_tolerance
+    istd_rt_high = istd_rt + istd_rt_tolerance
     # Calculate acceptable upper and lower limits
     lower_limit = istd_area_target - istd_area_tolerance
     upper_limit = istd_area_target + istd_area_tolerance
@@ -119,10 +121,9 @@ def mean(list):
     return sum(list) / len(list)
 
 
-def calculate_sample_concentration(peak_data_list, blank, low_index, high_index, istd_rt_low,
-                                   istd_rt_high, istd_area_target, istd_area_tolerance,
-                                   calibration_slope, calibration_intercept, istd_concentration,
-                                   dilution_factor):
+def calculate_sample_concentration(peak_data_list, blank, low_index, high_index, istd_rt, istd_rt_tolerance,
+                                   istd_area_target, istd_area_tolerance, calibration_slope, calibration_intercept,
+                                   istd_concentration, dilution_factor):
     """
     Calculate the concentration of a compound in a sample
     :param peak_data_list: Peak area list for the sample
@@ -136,7 +137,7 @@ def calculate_sample_concentration(peak_data_list, blank, low_index, high_index,
     :return: Final corrected concentration for compound in sample.
     """
     area = sum_areas(peak_data_list, low_index, high_index)
-    istd = get_istd_area(peak_data_list, istd_rt_low, istd_rt_high, istd_area_target, istd_area_tolerance)
+    istd = get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance)
 
     istd_blank_corrected = istd * (blank.area / blank.istd)
     area_blank_corrected = area - istd_blank_corrected
