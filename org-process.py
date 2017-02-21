@@ -96,12 +96,18 @@ def main():
                     istd_concentration=opx.DEF_ISTD_CONC_C6_C10,  # USER INPUT
                     dilution_factor=opx.DEF_DILUTION_FACTOR_C6_C10)  # USER INPUT
 
+            result = {
+                'sample_name': sample_name,
+                'analysis_time': analysis_time,
+                'conc_c6_c10': conc_c6_c10
+            }
+
         # Calculate C10-C16
         if not opx.DEF_ANALYSIS_C6_C10:
             blank_average.area = blank_average.area_c10_c16
             i_c10 = op.get_fraction_start_index(peak_data, opx.C10_C16_START)
             i_c16 = op.get_fraction_end_index(peak_data, opx.C10_C16_END)
-            conc_c6_c10 = op.calculate_sample_concentration(
+            conc_c10_c16 = op.calculate_sample_concentration(
                 peak_data_list=peak_data,
                 blank=blank_average,
                 low_index=i_c10,
@@ -149,6 +155,13 @@ def main():
                 istd_concentration=opx.DEF_ISTD_CONC_C10_C40,  # USER INPUT
                 dilution_factor=opx.DEF_DILUTION_FACTOR_C10_C40)  # USER INPUT
 
+            result = {
+                'sample_name': sample_name,
+                'analysis_time': analysis_time,
+                'conc_c10_c16': conc_c10_c16,
+                'conc_c16_c34': conc_c16_c34,
+                'conc_c34_c40': conc_c34_c40
+            }
 
 
 if __name__ == "__main__":
