@@ -1,3 +1,4 @@
+import glob
 import xlrd
 import op
 import opx
@@ -57,8 +58,21 @@ def main():
 
     # Make list of all blank files in directory
     # Make list of all sample files in directory (includes QC)
+    dir = r'C:\code\projects\org-process\extras\analysis-reports'
+    blank_data_list = []
+    blank_pattern = dir + '\*' + opx.BLANK_TAG + '*'
+    blank_file_list = glob.glob(blank_pattern)
+    for f in blank_file_list:
+        blank = get_data_from_report(f)
+        blank_data_list.append(blank)
 
-    # blank_data_list = []
+    blank_average = op.BlankAverage(
+        blank_data=blank_data_list,
+        istd_rt=opx.DEF_IST_RT,
+        istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,
+        istd_area_target=opx.DEF_ISTD_AREA_TARGET,
+        istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE)
+
     # For each file in BLANKS
     #    blank = get_data_from_report(file)
     #    blank_data_list.append(blank)
