@@ -79,6 +79,7 @@ def main():
 
         # Calculate C6-C10
         if opx.DEF_ANALYSIS_C6_C10:
+            blank_average.area = blank_average.area_c6_c10
             i_c6 = 1
             i_c10 = op.get_fraction_end_index(peak_data, opx.C6_C10_END)
             conc_c6_c10 = op.calculate_sample_concentration(
@@ -97,6 +98,8 @@ def main():
 
         # Calculate C10-C16
         if not opx.DEF_ANALYSIS_C6_C10:
+            blank_average.area = blank_average.area_c10_c16
+            i_c10 = op.get_fraction_start_index(peak_data, opx.C10_C16_START)
             i_c16 = op.get_fraction_end_index(peak_data, opx.C10_C16_END)
             conc_c6_c10 = op.calculate_sample_concentration(
                 peak_data_list=peak_data,
@@ -113,6 +116,7 @@ def main():
                 dilution_factor=opx.DEF_DILUTION_FACTOR_C10_C40)  # USER INPUT
 
             # Calculate C16-C34
+            blank_average.area = blank_average.area_c16_c34
             i_c34 = op.get_fraction_end_index(peak_data, opx.C16_C34_END)
             conc_c16_c34 = op.calculate_sample_concentration(
                 peak_data_list=peak_data,
@@ -129,6 +133,7 @@ def main():
                 dilution_factor=opx.DEF_DILUTION_FACTOR_C10_C40)  # USER INPUT
 
             # Calculate C34-C40
+            blank_average.area = blank_average.area_c34_c40
             i_c40 = op.get_fraction_end_index(peak_data, opx.C34_C40_END)
             conc_c34_c40 = op.calculate_sample_concentration(
                 peak_data_list=peak_data,
