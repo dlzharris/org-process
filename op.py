@@ -1,3 +1,4 @@
+import csv
 import opx
 
 __author__ = 'Daniel Harris'
@@ -170,3 +171,24 @@ def calculate_sample_concentration(peak_data_list, blank, low_index, high_index,
     concentration_sample = concentration_vial * dilution_factor
 
     return concentration_sample
+
+
+def write_to_csv(data_list, out_filepath, fieldnames_list):
+    """
+    Write a list of data dictionaries to a csv file
+    :param data_list: List of dictionaries to be written. Each dictionary
+        represents one line of data to be written
+    :param out_filepath: Path to file object to be written to
+    :param fieldnames_list: List of fieldnames to be used when writing
+    :return: No return value
+    """
+    with open(out_filepath, 'wb') as f:
+        writer = csv.DictWriter(
+            f,
+            delimiter=',',
+            extrasaction='ignore',
+            fieldnames=fieldnames_list
+        )
+        writer.writeheader()
+        writer.writerows(data_list)
+    return True

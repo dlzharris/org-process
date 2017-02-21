@@ -52,6 +52,7 @@ def check_dir_validity(dir_path):
 def main():
     """Run the org-process app."""
     # User inputs
+    out_filepath = r'C:\code\projects\org-process\extras\results'
 
     # Make list of all blank files in directory
     dir = r'C:\code\projects\org-process\extras\analysis-reports'
@@ -72,6 +73,9 @@ def main():
 
     # Make list of all sample files in directory (includes QC)
     sample_file_list = [x for x in glob.glob(dir + '\*') if x not in blank_file_list]
+
+    # Initialise empty list for storing results
+    result_set = []
 
     # Iterate through sample files and calculate results
     for f in sample_file_list:
@@ -101,6 +105,8 @@ def main():
                 'analysis_time': analysis_time,
                 'conc_c6_c10': conc_c6_c10
             }
+
+            result_set.append(result)
 
         # Calculate C10-C16
         if not opx.DEF_ANALYSIS_C6_C10:
@@ -163,6 +169,14 @@ def main():
                 'conc_c34_c40': conc_c34_c40
             }
 
+            result_set.append(result)
+
+    # Write the result set to CSV file
+    if opx.DEF_ANALYSIS_C6_C10:
+        fieldnames = opx.FIELDNAMES_C6_C10
+    else:
+        fieldnames = opx.FIELDNAMES_C10_C40
+    op.write_to_csv(result_set, out_filepath, fieldnames)
 
 if __name__ == "__main__":
     main()
