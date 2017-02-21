@@ -34,3 +34,6 @@ PEAK_LS_START = 1
 PEAK_LS_RT = 2
 PEAK_LS_END = 3
 PEAK_LS_AREA = 4
+
+# Filename flags
+BLANK_TAG = 'BLK'
