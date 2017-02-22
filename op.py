@@ -32,13 +32,14 @@ class BlankAverage:
             if opx.DEF_ANALYSIS_C6_C10:
                 # Find bounding indexes for C6-C10 fraction
                 i_c10 = get_fraction_end_index(blank, opx.C6_C10_END)
-                sum_c6_c10 = sum_areas(blank, 1, i_c10)
+                sum_c6_c10 = sum_areas(blank, 0, i_c10)
                 areas_c6_c10.append(sum_c6_c10)
                 # Calculate average peak area
                 self.area_c6_c10 = mean(areas_c6_c10)
 
             if not opx.DEF_ANALYSIS_C6_C10:
                 # Find bounding indexes for C10-C16 fraction
+                i_c10 = get_fraction_start_index(blank, opx.C10_C16_START)
                 i_c16 = get_fraction_end_index(blank, opx.C10_C16_END)
                 sum_c10_c16 = sum_areas(blank, i_c10, i_c16)
                 areas_c10_c16.append(sum_c10_c16)
@@ -51,7 +52,6 @@ class BlankAverage:
                 sum_c34_c40 = sum_areas(blank, i_c34, i_c40)
                 areas_c34_c40.append(sum_c34_c40)
                 # Calculate average peak areas
-                self.area_c6_c10 = mean(areas_c6_c10)
                 self.area_c10_c16 = mean(areas_c10_c16)
                 self.area_c16_c34 = mean(areas_c16_c34)
                 self.area_c34_c40 = mean(areas_c34_c40)
@@ -70,7 +70,7 @@ def sum_areas(peak_data_list, low_index, high_index):
     :param high_index: Index of final peak in list to sum
     :return: Total area between the bounding indices.
     """
-    areas = [x[opx.PEAK_LS_AREA] for x in peak_data_list[low_index:high_index + 1]]
+    areas = [x[opx.PEAK_LS_AREA] for x in peak_data_list[low_index:high_index]]
     return sum(areas)
 
 
@@ -92,7 +92,7 @@ def get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, 
     upper_limit = istd_area_target + istd_area_tolerance
 
     # Find all peaks in istd range
-    istd_peak_list = [x[opx.PEAK_LS_AREA] for x in peak_data_list if istd_rt_low >= x[opx.PEAK_LS_RT] >= istd_rt_high
+    istd_peak_list = [x[opx.PEAK_LS_AREA] for x in peak_data_list if istd_rt_low <= x[opx.PEAK_LS_RT] <= istd_rt_high
                       and lower_limit <= x[opx.PEAK_LS_AREA] <= upper_limit]
 
     # Test for presence of a single acceptable peak
@@ -127,11 +127,16 @@ def get_fraction_start_index(peak_data_list, rt_start):
     :return: Integer representing the starting index.
     """
     # Get the differences for each peak and find the closest to zero that
-    start_indexes = [abs((x[opx.PEAK_LS_IDX], x[opx.PEAK_LS_START] - rt_start)) for x in peak_data_list if
+    start_indexes = [(x[opx.PEAK_LS_IDX], abs(x[opx.PEAK_LS_START] - rt_start)) for x in peak_data_list if
                    x[opx.PEAK_LS_START] - rt_start <= 0]
     # Get starting index
-    start_tuple = min(start_indexes, key=lambda i: i[1])
-    return start_tuple[0]
+    try:
+        start_tuple = min(start_indexes, key=lambda i: i[1])
+        start_idx = start_tuple[0]
+    except ValueError:
+        # First detected peak starts after target retention time
+        start_idx = 1
+    return start_idx
 
 
 def mean(list):
@@ -165,12 +170,12 @@ def calculate_sample_concentration(peak_data_list, blank, low_index, high_index,
     area_blank_corrected = area - istd_blank_corrected
 
     response_ratio = area_blank_corrected / istd
-    concentration_ratio = (response_ratio - calibration_slope) / calibration_intercept
+    concentration_ratio = (response_ratio - calibration_intercept) / calibration_slope
 
     concentration_vial = concentration_ratio * istd_concentration
     concentration_sample = concentration_vial * dilution_factor
 
-    return concentration_sample
+    return round(concentration_sample, opx.DEF_DECIMAL_PLACES)
 
 
 def write_to_csv(data_list, out_filepath, fieldnames_list):

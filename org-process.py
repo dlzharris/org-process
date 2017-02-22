@@ -3,6 +3,8 @@ import xlrd
 import op
 import opx
 
+from pprint import pprint
+
 
 def get_data_from_report(file):
     """
@@ -52,10 +54,10 @@ def check_dir_validity(dir_path):
 def main():
     """Run the org-process app."""
     # User inputs
-    out_filepath = r'C:\code\projects\org-process\extras\results'
+    out_filepath = r'C:\code\projects\org-process\extras\results\results2.csv'
 
     # Make list of all blank files in directory
-    dir = r'C:\code\projects\org-process\extras\analysis-reports'
+    dir = r'C:\code\projects\org-process\extras\analysis-reports\TRH Report'
     blank_data_list = []
     blank_pattern = dir + '\*' + opx.BLANK_TAG + '*'
     blank_file_list = glob.glob(blank_pattern)
@@ -71,8 +73,12 @@ def main():
         istd_area_target=opx.DEF_ISTD_AREA_TARGET,
         istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE)
 
+    # Make exclude list for files that should not be analysed
+    temp_files = glob.glob(dir + '~')
+    excel_files = glob.glob(dir + '*.xls*')
+    exclude_list = [x for x in glob.glob(dir + '\*') if x in temp_files and x not in excel_files]
     # Make list of all sample files in directory (includes QC)
-    sample_file_list = [x for x in glob.glob(dir + '\*') if x not in blank_file_list]
+    sample_file_list = [x for x in glob.glob(dir + '\*') if x not in blank_file_list and x not in exclude_list]
 
     # Initialise empty list for storing results
     result_set = []
@@ -83,8 +89,11 @@ def main():
 
         # Calculate C6-C10
         if opx.DEF_ANALYSIS_C6_C10:
+            if sample_name == u'17_0077_2':
+                pass
+
             blank_average.area = blank_average.area_c6_c10
-            i_c6 = 1
+            i_c6 = 0
             i_c10 = op.get_fraction_end_index(peak_data, opx.C6_C10_END)
             conc_c6_c10 = op.calculate_sample_concentration(
                     peak_data_list=peak_data,
@@ -95,8 +104,8 @@ def main():
                     istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,  # USER INPUT
                     istd_area_target=opx.DEF_ISTD_AREA_TARGET,  # USER INPUT
                     istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE,  # USER INPUT
-                    calibration_slope=4.2608,  # USER INPUT
-                    calibration_intercept=0,  # USER INPUT
+                    calibration_slope=3.3164,  # USER INPUT
+                    calibration_intercept=-0.3160,  # USER INPUT
                     istd_concentration=opx.DEF_ISTD_CONC_C6_C10,  # USER INPUT
                     dilution_factor=opx.DEF_DILUTION_FACTOR_C6_C10)  # USER INPUT
 
@@ -177,6 +186,9 @@ def main():
     else:
         fieldnames = opx.FIELDNAMES_C10_C40
     op.write_to_csv(result_set, out_filepath, fieldnames)
+
+    # TODO: REMOVE THIS
+    pprint(result_set)
 
 if __name__ == "__main__":
     main()
