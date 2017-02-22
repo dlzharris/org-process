@@ -1,4 +1,5 @@
 import csv
+import xlrd
 import opx
 
 __author__ = 'Daniel Harris'
@@ -181,6 +182,86 @@ def calculate_sample_concentration(peak_data_list, blank, low_index, high_index,
     concentration_sample = concentration_vial * dilution_factor
 
     return round(concentration_sample, opx.DEF_DECIMAL_PLACES)
+
+
+def get_data_from_report(file):
+    """
+    Gets retention time and peak area data from a MassHunter-generated Excel report
+    :param file: Fully resolved location and file name of target report file
+    :return: List of tuples of each peak, retention time and area of sample
+    """
+    # Open the Excel workbook
+    gcms_book = xlrd.open_workbook(file)
+    sheet = gcms_book.sheet_by_index(0)
+
+    # Find sample name column
+    n = 0
+    while sheet.cell(opx.SAMPLE_NAME_ROW, n).value != 'Sample Name':
+        n += 1
+    sample_name_col = n + 1
+    while sheet.cell(opx.SAMPLE_NAME_ROW, sample_name_col).value == '':
+        sample_name_col += 1
+
+    # Find analysis time column
+    n = 0
+    while sheet.cell(opx.ANALYSIS_TIME_ROW, n).value != 'Acquired Time':
+        n += 1
+    analysis_time_col = n + 1
+    while sheet.cell(opx.ANALYSIS_TIME_ROW, analysis_time_col).value == '':
+        analysis_time_col += 1
+
+    # Collate sample metadata
+    sample_name = sheet.cell(opx.SAMPLE_NAME_ROW, sample_name_col).value
+    analysis_time = sheet.cell(opx.ANALYSIS_TIME_ROW, analysis_time_col).value
+
+    # Find beginning of integration peak list
+    n = 0
+    while sheet.cell(n, opx.PEAK_INDEX_COLUMN).value != "Integration Peak List":
+        n += 1
+    PEAK_LIST_TITLE_ROW = n + 1
+    PEAK_LIST_START_ROW = n + 2
+
+    # Find end of integration peak list
+    n = PEAK_LIST_START_ROW
+    while sheet.cell_type(n, opx.PEAK_INDEX_COLUMN) not in (xlrd.XL_CELL_BLANK, xlrd.XL_CELL_EMPTY):
+        n += 1
+    PEAK_LIST_END_ROW = n
+
+    # Find retention time start column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'Start':
+        n += 1
+    PEAK_START_COLUMN = n
+
+    # Find retention time midpoint column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'RT':
+        n += 1
+    RT_COLUMN = n
+
+    # Find retention time end column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'End':
+        n += 1
+    PEAK_END_COLUMN = n
+
+    # Find area column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'Area':
+        n += 1
+    AREA_COLUMN = n
+
+    # Import peak and rt data
+    peaks = sheet.col_values(opx.PEAK_INDEX_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    starts = sheet.col_values(PEAK_START_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    rts = sheet.col_values(RT_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    ends = sheet.col_values(PEAK_END_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    areas = sheet.col_values(AREA_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+
+    peaks = map(int, peaks)
+    peak_data = zip(peaks, starts, rts, ends, areas)
+
+    return sample_name, analysis_time, peak_data
 
 
 def write_to_csv(data_list, out_filepath, fieldnames_list):
