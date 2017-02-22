@@ -16,14 +16,31 @@ def get_data_from_report(file):
     gcms_book = xlrd.open_workbook(file)
     sheet = gcms_book.sheet_by_index(0)
 
+    # Find sample name column
+    n = 0
+    while sheet.cell(opx.SAMPLE_NAME_ROW, n).value != 'Sample Name':
+        n += 1
+    sample_name_col = n + 1
+    while sheet.cell(opx.SAMPLE_NAME_ROW, sample_name_col).value == '':
+        sample_name_col += 1
+
+    # Find analysis time column
+    n = 0
+    while sheet.cell(opx.ANALYSIS_TIME_ROW, n).value != 'Acquired Time':
+        n += 1
+    analysis_time_col = n + 1
+    while sheet.cell(opx.ANALYSIS_TIME_ROW, analysis_time_col).value == '':
+        analysis_time_col += 1
+
     # Collate sample metadata
-    sample_name = sheet.cell(opx.SAMPLE_NAME_ROW, opx.SAMPLE_NAME_COLUMN).value
-    analysis_time = sheet.cell(opx.ANALYSIS_TIME_ROW, opx.ANALYSIS_TIME_COLUMN).value
+    sample_name = sheet.cell(opx.SAMPLE_NAME_ROW, sample_name_col).value
+    analysis_time = sheet.cell(opx.ANALYSIS_TIME_ROW, analysis_time_col).value
 
     # Find beginning of integration peak list
     n = 0
     while sheet.cell(n, opx.PEAK_INDEX_COLUMN).value != "Integration Peak List":
         n += 1
+    PEAK_LIST_TITLE_ROW = n + 1
     PEAK_LIST_START_ROW = n + 2
 
     # Find end of integration peak list
@@ -32,12 +49,36 @@ def get_data_from_report(file):
         n += 1
     PEAK_LIST_END_ROW = n
 
+    # Find retention time start column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'Start':
+        n += 1
+    PEAK_START_COLUMN = n
+
+    # Find retention time midpoint column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'RT':
+        n += 1
+    RT_COLUMN = n
+
+    # Find retention time end column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'End':
+        n += 1
+    PEAK_END_COLUMN = n
+
+    # Find area column
+    n = 0
+    while sheet.cell(PEAK_LIST_TITLE_ROW, n).value != 'Area':
+        n += 1
+    AREA_COLUMN = n
+
     # Import peak and rt data
     peaks = sheet.col_values(opx.PEAK_INDEX_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
-    starts = sheet.col_values(opx.PEAK_START_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
-    rts = sheet.col_values(opx.RT_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
-    ends = sheet.col_values(opx.PEAK_END_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
-    areas = sheet.col_values(opx.AREA_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    starts = sheet.col_values(PEAK_START_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    rts = sheet.col_values(RT_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    ends = sheet.col_values(PEAK_END_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
+    areas = sheet.col_values(AREA_COLUMN, PEAK_LIST_START_ROW, PEAK_LIST_END_ROW)
 
     peaks = map(int, peaks)
     peak_data = zip(peaks, starts, rts, ends, areas)
@@ -62,16 +103,28 @@ def main():
     blank_pattern = dir + '\*' + opx.BLANK_TAG + '*'
     blank_file_list = glob.glob(blank_pattern)
 
+    # Select the correct internal standard
+    if opx.DEF_ANALYSIS_C6_C10:
+        istd_rt = opx.DEF_ISTD_RT_C6_C10
+        istd_rt_tolerance = opx.DEF_ISTD_RT_TOLERANCE_C6_C10
+        istd_area_target = opx.DEF_ISTD_AREA_TARGET_C6_C10
+        istd_area_tolerance = opx.DEF_ISTD_AREA_TOLERANCE_C6_C10
+    else:
+        istd_rt = opx.DEF_ISTD_RT_C10_C40
+        istd_rt_tolerance = opx.DEF_ISTD_RT_TOLERANCE_C10_C40
+        istd_area_target = opx.DEF_ISTD_AREA_TARGET_C10_C40
+        istd_area_tolerance = opx.DEF_ISTD_AREA_TOLERANCE_C10_C40
+
     for f in blank_file_list:
         blank = get_data_from_report(f)[2]
         blank_data_list.append(blank)
 
     blank_average = op.BlankAverage(
         blank_data=blank_data_list,
-        istd_rt=opx.DEF_IST_RT,
-        istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,
-        istd_area_target=opx.DEF_ISTD_AREA_TARGET,
-        istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE)
+        istd_rt=istd_rt,
+        istd_rt_tolerance=istd_rt_tolerance,
+        istd_area_target=istd_area_target,
+        istd_area_tolerance=istd_area_tolerance)
 
     # Make exclude list for files that should not be analysed
     temp_files = glob.glob(dir + '~')
@@ -89,9 +142,6 @@ def main():
 
         # Calculate C6-C10
         if opx.DEF_ANALYSIS_C6_C10:
-            if sample_name == u'17_0077_2':
-                pass
-
             blank_average.area = blank_average.area_c6_c10
             i_c6 = 0
             i_c10 = op.get_fraction_end_index(peak_data, opx.C6_C10_END)
@@ -100,10 +150,10 @@ def main():
                     blank=blank_average,
                     low_index=i_c6,
                     high_index=i_c10,
-                    istd_rt=opx.DEF_IST_RT,  # USER INPUT
-                    istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,  # USER INPUT
-                    istd_area_target=opx.DEF_ISTD_AREA_TARGET,  # USER INPUT
-                    istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE,  # USER INPUT
+                    istd_rt=istd_rt,  # USER INPUT
+                    istd_rt_tolerance=istd_rt_tolerance,  # USER INPUT
+                    istd_area_target=istd_area_target,  # USER INPUT
+                    istd_area_tolerance=istd_area_tolerance,  # USER INPUT
                     calibration_slope=3.3164,  # USER INPUT
                     calibration_intercept=-0.3160,  # USER INPUT
                     istd_concentration=opx.DEF_ISTD_CONC_C6_C10,  # USER INPUT
@@ -118,6 +168,7 @@ def main():
             result_set.append(result)
 
         # Calculate C10-C16
+        # TODO: Analysis reports have different merged cell columns - how the fuck do we deal with this?
         if not opx.DEF_ANALYSIS_C6_C10:
             blank_average.area = blank_average.area_c10_c16
             i_c10 = op.get_fraction_start_index(peak_data, opx.C10_C16_START)
@@ -127,12 +178,12 @@ def main():
                 blank=blank_average,
                 low_index=i_c10,
                 high_index=i_c16,
-                istd_rt=opx.DEF_IST_RT,  # USER INPUT
-                istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,  # USER INPUT
-                istd_area_target=opx.DEF_ISTD_AREA_TARGET,  # USER INPUT
-                istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE,  # USER INPUT
-                calibration_slope=4.2608,  # USER INPUT
-                calibration_intercept=0,  # USER INPUT
+                istd_rt=istd_rt,  # USER INPUT
+                istd_rt_tolerance=istd_rt_tolerance,  # USER INPUT
+                istd_area_target=istd_area_target,  # USER INPUT
+                istd_area_tolerance=istd_area_tolerance,  # USER INPUT
+                calibration_slope=3.3164,  # USER INPUT
+                calibration_intercept=-0.3160,  # USER INPUT
                 istd_concentration=opx.DEF_ISTD_CONC_C10_C40,  # USER INPUT
                 dilution_factor=opx.DEF_DILUTION_FACTOR_C10_C40)  # USER INPUT
 
@@ -144,12 +195,12 @@ def main():
                 blank=blank_average,
                 low_index=i_c16,
                 high_index=i_c34,
-                istd_rt=opx.DEF_IST_RT,  # USER INPUT
-                istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,  # USER INPUT
-                istd_area_target=opx.DEF_ISTD_AREA_TARGET,  # USER INPUT
-                istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE,  # USER INPUT
-                calibration_slope=4.2608,  # USER INPUT
-                calibration_intercept=0,  # USER INPUT
+                istd_rt=istd_rt,  # USER INPUT
+                istd_rt_tolerance=istd_rt_tolerance,  # USER INPUT
+                istd_area_target=istd_area_target,  # USER INPUT
+                istd_area_tolerance=istd_area_tolerance,  # USER INPUT
+                calibration_slope=3.3164,  # USER INPUT
+                calibration_intercept=-0.3160,  # USER INPUT
                 istd_concentration=opx.DEF_ISTD_CONC_C10_C40,  # USER INPUT
                 dilution_factor=opx.DEF_DILUTION_FACTOR_C10_C40)  # USER INPUT
 
@@ -161,12 +212,12 @@ def main():
                 blank=blank_average,
                 low_index=i_c34,
                 high_index=i_c40,
-                istd_rt=opx.DEF_IST_RT,  # USER INPUT
-                istd_rt_tolerance=opx.DEF_ISTD_RT_TOLERANCE,  # USER INPUT
-                istd_area_target=opx.DEF_ISTD_AREA_TARGET,  # USER INPUT
-                istd_area_tolerance=opx.DEF_ISTD_AREA_TOLERANCE,  # USER INPUT
-                calibration_slope=4.2608,  # USER INPUT
-                calibration_intercept=0,  # USER INPUT
+                istd_rt=istd_rt,  # USER INPUT
+                istd_rt_tolerance=istd_rt_tolerance,  # USER INPUT
+                istd_area_target=istd_area_target,  # USER INPUT
+                istd_area_tolerance=istd_area_tolerance,  # USER INPUT
+                calibration_slope=3.3164,  # USER INPUT
+                calibration_intercept=-0.3160,  # USER INPUT
                 istd_concentration=opx.DEF_ISTD_CONC_C10_C40,  # USER INPUT
                 dilution_factor=opx.DEF_DILUTION_FACTOR_C10_C40)  # USER INPUT
 
