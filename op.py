@@ -92,8 +92,13 @@ def get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, 
     upper_limit = istd_area_target + istd_area_tolerance
 
     # Find all peaks in istd range
-    istd_peak_list = [x[opx.PEAK_LS_AREA] for x in peak_data_list if istd_rt_low <= x[opx.PEAK_LS_RT] <= istd_rt_high
+    istd_peak_list = [(x[opx.PEAK_LS_RT], x[opx.PEAK_LS_AREA]) for x in peak_data_list if istd_rt_low <= x[opx.PEAK_LS_RT] <= istd_rt_high
                       and lower_limit <= x[opx.PEAK_LS_AREA] <= upper_limit]
+
+    # Try to isolate a single peak if there are multiples
+    if len(istd_peak_list) > 1:
+        istd_relative_rt = [(abs(p[0] - istd_rt), p[1]) for p in istd_peak_list]
+        istd_peak_list = [min(istd_relative_rt, key=lambda i: i[0])]
 
     # Test for presence of a single acceptable peak
     if len(istd_peak_list) == 0:
@@ -101,7 +106,7 @@ def get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, 
     elif len(istd_peak_list) > 1:
         raise IstdError("More than one acceptable internal standard peak found.")
     else:
-        return istd_peak_list[0]  # istd area
+        return istd_peak_list[0][1]  # istd area
 
 
 def get_fraction_end_index(peak_data_list, rt_end):
