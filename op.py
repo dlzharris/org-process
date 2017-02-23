@@ -20,7 +20,7 @@ class IstdError(Exception):
 # Custom classes
 ###############################################################################
 class BlankAverage:
-    def __init__(self, blank_data, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance):
+    def __init__(self, blank_data, analysis_c6_c10, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance):
 
         # Create required empty lists
         areas_c6_c10 = []
@@ -30,7 +30,7 @@ class BlankAverage:
 
         # For each blank item
         for blank in blank_data:
-            if opx.DEF_ANALYSIS_C6_C10:
+            if analysis_c6_c10:
                 # Find bounding indexes for C6-C10 fraction
                 i_c10 = get_fraction_end_index(blank, opx.C6_C10_END)
                 sum_c6_c10 = sum_areas(blank, 0, i_c10)
@@ -38,7 +38,7 @@ class BlankAverage:
                 # Calculate average peak area
                 self.area_c6_c10 = mean(areas_c6_c10)
 
-            if not opx.DEF_ANALYSIS_C6_C10:
+            else:
                 # Find bounding indexes for C10-C16 fraction
                 i_c10 = get_fraction_start_index(blank, opx.C10_C16_START)
                 i_c16 = get_fraction_end_index(blank, opx.C10_C16_END)
