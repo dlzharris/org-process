@@ -137,7 +137,6 @@ class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
             msg.exec_()
             return
 
-
         # Make exclude list for files that should not be analysed
         temp_files = glob.glob(dir + '~')
         excel_files = glob.glob(dir + '*.xls*')
