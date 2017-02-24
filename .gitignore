@@ -47,6 +47,7 @@ extras
 build
 build_files
 dist
+ui
 
 # Untracked project files #
 ############################
