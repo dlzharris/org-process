@@ -181,7 +181,6 @@ class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
                     result_set.append(result)
 
                 # Calculate C10-C16
-                # TODO: Analysis reports have different merged cell columns - how the fuck do we deal with this?
                 else:
                     blank_average.area = blank_average.area_c10_c16
                     i_c10 = op.get_fraction_start_index(peak_data, opx.C10_C16_START)
@@ -267,7 +266,7 @@ class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
             msg.setWindowTitle("Export successful!")
             msg.exec_()
 
-        # TODO: REMOVE THIS
+        # Pretty print results for verification
         pprint(result_set)
 
 
