@@ -1,7 +1,17 @@
+"""
+Module: opx.py
+Global constants and default values used in the Org-Process application.
+
+Author: Daniel Harris
+Title: Data & Procedures Officer
+Organisation: DPI Water
+Date modified: 24/02/2017
+"""
+
 __author__ = 'Daniel Harris'
-__date__ = '02 February 2017'
+__date__ = '24 February 2017'
 __email__ = 'daniel.harris@dpi.nsw.gov.au'
-__version__ = '0.1'
+__version__ = '1.0'
 
 
 ###############################################################################

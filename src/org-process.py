@@ -1,13 +1,36 @@
+"""
+Module: org-process.py
+Runs the Org-Process application for bulk processing of GC-MS data acquired
+from Agilent Mass Hunter analysis reports for TRH analysis.
+
+Author: Daniel Harris
+Title: Data & Procedures Officer
+Organisation: DPI Water
+Date modified: 24/02/2017
+
+External dependencies: PyQT4
+
+Classes:
+MainApp: Constructor for the main application.
+
+Functions:
+Main: Runs the Org-Process application.
+"""
+
 import glob
 import sys
+from pprint import pprint
+
+from PyQt4 import QtGui
 
 import op
 import opx
 import opui
 
-from PyQt4 import QtGui, QtCore
-
-from pprint import pprint
+__author__ = 'Daniel Harris'
+__date__ = '24 February 2017'
+__email__ = 'daniel.harris@dpi.nsw.gov.au'
+__version__ = '1.0'
 
 
 class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
@@ -220,6 +243,7 @@ class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
                     }
 
                     result_set.append(result)
+
             except op.IstdError, e:
                 txt = "ISTD error encountered on sample %s: %s" % (sample_name, e)
                 msg = QtGui.QMessageBox()
@@ -245,11 +269,6 @@ class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
 
         # TODO: REMOVE THIS
         pprint(result_set)
-
-def check_dir_validity(dir_path):
-    # TODO: check_dir_validity(dir_path)
-    # Check that the supplied folder has the required blanks and other QC samples.
-    pass
 
 
 def main():

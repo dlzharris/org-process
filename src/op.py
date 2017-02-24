@@ -1,11 +1,37 @@
+"""
+Module: op.py
+Provides the functions required for processing GC-MS data from
+MassHunter software to calculate TRH values.
+
+Author: Daniel Harris
+Title: Data & Procedures Officer
+Organisation: DPI Water
+Date modified: 24/02/1017
+
+External dependencies: xlrd
+
+Exceptions:
+IstdError: Custom excption for ISTD errors.
+
+Functions:
+calculate_sample_concentration: Calculate the concentration of a compound in a sample
+get_data_from_report: Gets retention time and peak area data from a MassHunter-generated Excel report
+get_fraction_end_index: Finds the ending index for the peaks list for the retention time wanted
+get_fraction_start_index: Finds the starting index for the peaks list for the retention times wanted
+get_istd_area: Get the peak area for the given internal standard
+mean: Calculates the mean of a given list of numbers
+sum_areas: Sums the peak areas given a set of bounding indices for the peak data list
+write_to_csv: Write a list of data dictionaries to a csv file
+"""
+
 import csv
 import xlrd
 import opx
 
 __author__ = 'Daniel Harris'
-__date__ = '02 February 2017'
+__date__ = '24 February 2017'
 __email__ = 'daniel.harris@dpi.nsw.gov.au'
-__version__ = '0.1'
+__version__ = '1.0'
 
 
 ###############################################################################
@@ -60,100 +86,10 @@ class BlankAverage:
         self.istd = mean([get_istd_area(x, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance) for x in blank_data])
         self.area = None
 
+
 ###############################################################################
 # Functions
 ###############################################################################
-def sum_areas(peak_data_list, low_index, high_index):
-    """
-    Sums the peak areas given a set of bounding indices for the peak data list
-    :param peak_data_list: Peak area list for the sample
-    :param low_index: Index of first peak to sum
-    :param high_index: Index of final peak in list to sum
-    :return: Total area between the bounding indices.
-    """
-    areas = [x[opx.PEAK_LS_AREA] for x in peak_data_list[low_index:high_index]]
-    return sum(areas)
-
-
-def get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance):
-    """
-    Get the peak area for the given internal standard
-    :param peak_data_list: Peak area list for the sample
-    :param istd_rt_low: Lowest retention time for the internal standard
-    :param istd_rt_high: Highest retention time for the intenral standard
-    :param istd_area_target: Target area for the internal standard
-    :param istd_area_tolerance: Acceptable percent tolerance (expressed as a decimal) for istd area
-    :return: Peak area integration for the internal standard
-    """
-    # Calculate acceptable retention time window
-    istd_rt_low = istd_rt - istd_rt_tolerance
-    istd_rt_high = istd_rt + istd_rt_tolerance
-    # Calculate acceptable upper and lower limits
-    lower_limit = istd_area_target - istd_area_tolerance
-    upper_limit = istd_area_target + istd_area_tolerance
-
-    # Find all peaks in istd range
-    istd_peak_list = [(x[opx.PEAK_LS_RT], x[opx.PEAK_LS_AREA]) for x in peak_data_list if istd_rt_low <= x[opx.PEAK_LS_RT] <= istd_rt_high
-                      and lower_limit <= x[opx.PEAK_LS_AREA] <= upper_limit]
-
-    # Try to isolate a single peak if there are multiples
-    if len(istd_peak_list) > 1:
-        istd_relative_rt = [(abs(p[0] - istd_rt), p[1]) for p in istd_peak_list]
-        istd_peak_list = [min(istd_relative_rt, key=lambda i: i[0])]
-
-    # Test for presence of a single acceptable peak
-    if len(istd_peak_list) == 0:
-        raise IstdError("No acceptable internal standard peaks found.")
-    elif len(istd_peak_list) > 1:
-        raise IstdError("More than one acceptable internal standard peak found.")
-    else:
-        return istd_peak_list[0][1]  # istd area
-
-
-def get_fraction_end_index(peak_data_list, rt_end):
-    """
-    Finds the ending index for the peaks list for the retention time wanted
-    :param peak_data_list: Peak area list for the sample
-    :param rt_end: Ending retention time for boundaries
-    :return: Integer representing the ending index.
-    """
-    # Get the differences for each peak and find the closest to zero that
-    end_indexes = [(x[opx.PEAK_LS_IDX], x[opx.PEAK_LS_END] - rt_end) for x in peak_data_list if
-                   x[opx.PEAK_LS_END] - rt_end >= 0]
-    # Get ending index
-    end_tuple = min(end_indexes, key = lambda i: i[1])
-    return end_tuple[0]
-
-
-def get_fraction_start_index(peak_data_list, rt_start):
-    """
-    Finds the starting index for the peaks list for the retention times wanted
-    :param peak_data_list: Peak area list for the sample
-    :param rt_start: Starting retention time for boundaries
-    :return: Integer representing the starting index.
-    """
-    # Get the differences for each peak and find the closest to zero that
-    start_indexes = [(x[opx.PEAK_LS_IDX], abs(x[opx.PEAK_LS_START] - rt_start)) for x in peak_data_list if
-                   x[opx.PEAK_LS_START] - rt_start <= 0]
-    # Get starting index
-    try:
-        start_tuple = min(start_indexes, key=lambda i: i[1])
-        start_idx = start_tuple[0]
-    except ValueError:
-        # First detected peak starts after target retention time
-        start_idx = 1
-    return start_idx
-
-
-def mean(list):
-    """
-    Calculates the mean of a given list of numbers.
-    :param list: List of numbers
-    :return: Mean of the list.
-    """
-    return sum(list) / len(list)
-
-
 def calculate_sample_concentration(peak_data_list, blank, low_index, high_index, istd_rt, istd_rt_tolerance,
                                    istd_area_target, istd_area_tolerance, calibration_slope, calibration_intercept,
                                    istd_concentration, dilution_factor):
@@ -262,6 +198,97 @@ def get_data_from_report(file):
     peak_data = zip(peaks, starts, rts, ends, areas)
 
     return sample_name, analysis_time, peak_data
+
+
+def get_fraction_end_index(peak_data_list, rt_end):
+    """
+    Finds the ending index for the peaks list for the retention time wanted
+    :param peak_data_list: Peak area list for the sample
+    :param rt_end: Ending retention time for boundaries
+    :return: Integer representing the ending index.
+    """
+    # Get the differences for each peak and find the closest to zero that
+    end_indexes = [(x[opx.PEAK_LS_IDX], x[opx.PEAK_LS_END] - rt_end) for x in peak_data_list if
+                   x[opx.PEAK_LS_END] - rt_end >= 0]
+    # Get ending index
+    end_tuple = min(end_indexes, key = lambda i: i[1])
+    return end_tuple[0]
+
+
+def get_fraction_start_index(peak_data_list, rt_start):
+    """
+    Finds the starting index for the peaks list for the retention times wanted
+    :param peak_data_list: Peak area list for the sample
+    :param rt_start: Starting retention time for boundaries
+    :return: Integer representing the starting index.
+    """
+    # Get the differences for each peak and find the closest to zero that
+    start_indexes = [(x[opx.PEAK_LS_IDX], abs(x[opx.PEAK_LS_START] - rt_start)) for x in peak_data_list if
+                   x[opx.PEAK_LS_START] - rt_start <= 0]
+    # Get starting index
+    try:
+        start_tuple = min(start_indexes, key=lambda i: i[1])
+        start_idx = start_tuple[0]
+    except ValueError:
+        # First detected peak starts after target retention time
+        start_idx = 1
+    return start_idx
+
+
+def get_istd_area(peak_data_list, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance):
+    """
+    Get the peak area for the given internal standard
+    :param peak_data_list: Peak area list for the sample
+    :param istd_rt_low: Lowest retention time for the internal standard
+    :param istd_rt_high: Highest retention time for the intenral standard
+    :param istd_area_target: Target area for the internal standard
+    :param istd_area_tolerance: Acceptable percent tolerance (expressed as a decimal) for istd area
+    :return: Peak area integration for the internal standard
+    """
+    # Calculate acceptable retention time window
+    istd_rt_low = istd_rt - istd_rt_tolerance
+    istd_rt_high = istd_rt + istd_rt_tolerance
+    # Calculate acceptable upper and lower limits
+    lower_limit = istd_area_target - istd_area_tolerance
+    upper_limit = istd_area_target + istd_area_tolerance
+
+    # Find all peaks in istd range
+    istd_peak_list = [(x[opx.PEAK_LS_RT], x[opx.PEAK_LS_AREA]) for x in peak_data_list if istd_rt_low <= x[opx.PEAK_LS_RT] <= istd_rt_high
+                      and lower_limit <= x[opx.PEAK_LS_AREA] <= upper_limit]
+
+    # Try to isolate a single peak if there are multiples
+    if len(istd_peak_list) > 1:
+        istd_relative_rt = [(abs(p[0] - istd_rt), p[1]) for p in istd_peak_list]
+        istd_peak_list = [min(istd_relative_rt, key=lambda i: i[0])]
+
+    # Test for presence of a single acceptable peak
+    if len(istd_peak_list) == 0:
+        raise IstdError("No acceptable internal standard peaks found.")
+    elif len(istd_peak_list) > 1:
+        raise IstdError("More than one acceptable internal standard peak found.")
+    else:
+        return istd_peak_list[0][1]  # istd area
+
+
+def mean(list):
+    """
+    Calculates the mean of a given list of numbers.
+    :param list: List of numbers
+    :return: Mean of the list.
+    """
+    return sum(list) / len(list)
+
+
+def sum_areas(peak_data_list, low_index, high_index):
+    """
+    Sums the peak areas given a set of bounding indices for the peak data list
+    :param peak_data_list: Peak area list for the sample
+    :param low_index: Index of first peak to sum
+    :param high_index: Index of final peak in list to sum
+    :return: Total area between the bounding indices.
+    """
+    areas = [x[opx.PEAK_LS_AREA] for x in peak_data_list[low_index:high_index]]
+    return sum(areas)
 
 
 def write_to_csv(data_list, out_filepath, fieldnames_list):
