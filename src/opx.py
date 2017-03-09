@@ -75,4 +75,4 @@ DEF_DECIMAL_PLACES = 3
 
 # CSV Options
 FIELDNAMES_C6_C10 = ['sample_name', 'analysis_time', 'conc_c6_c10']
-FIELDNAMES_C10_C40 = ['sample_name', 'analysis_time', 'conc_c10_c16', 'conc_c16_c34', 'conc_c34_c40']
+FIELDNAMES_C10_C40 = ['sample_name', 'analysis_time', 'conc_c10_c16', 'conc_c16_c34', 'conc_c34_c40', 'conc_c10_c40']

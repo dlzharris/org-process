@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'org-process-ui_v03-3.ui'
+# Form implementation generated from reading ui file 'c:/code/projects/org-process/ui/org-process-ui_v03-3.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
@@ -47,20 +47,13 @@ class Ui_MainWindow(object):
         self.labelIstd.setFont(font)
         self.labelIstd.setObjectName(_fromUtf8("labelIstd"))
         self.gridLayout.addWidget(self.labelIstd, 4, 0, 1, 4)
-        self.doubleSpinBoxCalibrationSlope = QtGui.QDoubleSpinBox(self.gridLayoutWidget)
-        self.doubleSpinBoxCalibrationSlope.setDecimals(3)
-        self.doubleSpinBoxCalibrationSlope.setMinimum(-100.0)
-        self.doubleSpinBoxCalibrationSlope.setMaximum(100.0)
-        self.doubleSpinBoxCalibrationSlope.setSingleStep(0.001)
-        self.doubleSpinBoxCalibrationSlope.setObjectName(_fromUtf8("doubleSpinBoxCalibrationSlope"))
-        self.gridLayout.addWidget(self.doubleSpinBoxCalibrationSlope, 8, 7, 1, 1)
         self.doubleSpinBoxCalibrationIntercept = QtGui.QDoubleSpinBox(self.gridLayoutWidget)
-        self.doubleSpinBoxCalibrationIntercept.setDecimals(3)
-        self.doubleSpinBoxCalibrationIntercept.setMinimum(-100.0)
-        self.doubleSpinBoxCalibrationIntercept.setMaximum(100.0)
+        self.doubleSpinBoxCalibrationIntercept.setDecimals(6)
+        self.doubleSpinBoxCalibrationIntercept.setMinimum(-10000.0)
+        self.doubleSpinBoxCalibrationIntercept.setMaximum(10000.0)
         self.doubleSpinBoxCalibrationIntercept.setSingleStep(0.001)
         self.doubleSpinBoxCalibrationIntercept.setObjectName(_fromUtf8("doubleSpinBoxCalibrationIntercept"))
-        self.gridLayout.addWidget(self.doubleSpinBoxCalibrationIntercept, 9, 7, 1, 1)
+        self.gridLayout.addWidget(self.doubleSpinBoxCalibrationIntercept, 10, 7, 1, 1)
         self.labelTestType = QtGui.QLabel(self.gridLayoutWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -160,7 +153,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.doubleSpinBoxRtTolerance, 6, 2, 1, 1)
         self.labelConcentration = QtGui.QLabel(self.gridLayoutWidget)
         self.labelConcentration.setObjectName(_fromUtf8("labelConcentration"))
-        self.gridLayout.addWidget(self.labelConcentration, 9, 1, 1, 1)
+        self.gridLayout.addWidget(self.labelConcentration, 10, 1, 1, 1)
         self.labelRtTarget = QtGui.QLabel(self.gridLayoutWidget)
         self.labelRtTarget.setObjectName(_fromUtf8("labelRtTarget"))
         self.gridLayout.addWidget(self.labelRtTarget, 5, 1, 1, 1)
@@ -168,7 +161,7 @@ class Ui_MainWindow(object):
         self.doubleSpinBoxConcentration.setMaximum(500.0)
         self.doubleSpinBoxConcentration.setSingleStep(0.01)
         self.doubleSpinBoxConcentration.setObjectName(_fromUtf8("doubleSpinBoxConcentration"))
-        self.gridLayout.addWidget(self.doubleSpinBoxConcentration, 9, 2, 1, 1)
+        self.gridLayout.addWidget(self.doubleSpinBoxConcentration, 10, 2, 1, 1)
         self.labelAreaTolerance = QtGui.QLabel(self.gridLayoutWidget)
         self.labelAreaTolerance.setObjectName(_fromUtf8("labelAreaTolerance"))
         self.gridLayout.addWidget(self.labelAreaTolerance, 8, 1, 1, 1)
@@ -188,7 +181,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.labelCalibrationSlope, 8, 6, 1, 1)
         self.labelCalibrationIntercept = QtGui.QLabel(self.gridLayoutWidget)
         self.labelCalibrationIntercept.setObjectName(_fromUtf8("labelCalibrationIntercept"))
-        self.gridLayout.addWidget(self.labelCalibrationIntercept, 9, 6, 1, 1)
+        self.gridLayout.addWidget(self.labelCalibrationIntercept, 10, 6, 1, 1)
         self.line_3 = QtGui.QFrame(self.gridLayoutWidget)
         self.line_3.setFrameShape(QtGui.QFrame.HLine)
         self.line_3.setFrameShadow(QtGui.QFrame.Sunken)
@@ -218,6 +211,13 @@ class Ui_MainWindow(object):
         self.labelCalibration.setFont(font)
         self.labelCalibration.setObjectName(_fromUtf8("labelCalibration"))
         self.gridLayout.addWidget(self.labelCalibration, 7, 5, 1, 3)
+        self.doubleSpinBoxCalibrationSlope = QtGui.QDoubleSpinBox(self.gridLayoutWidget)
+        self.doubleSpinBoxCalibrationSlope.setDecimals(6)
+        self.doubleSpinBoxCalibrationSlope.setMinimum(-100000.0)
+        self.doubleSpinBoxCalibrationSlope.setMaximum(100000.0)
+        self.doubleSpinBoxCalibrationSlope.setSingleStep(0.001)
+        self.doubleSpinBoxCalibrationSlope.setObjectName(_fromUtf8("doubleSpinBoxCalibrationSlope"))
+        self.gridLayout.addWidget(self.doubleSpinBoxCalibrationSlope, 9, 7, 1, 1)
         self.label_6 = QtGui.QLabel(self.centralwidget)
         self.label_6.setGeometry(QtCore.QRect(20, 20, 171, 41))
         font = QtGui.QFont()
@@ -259,7 +259,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "Org-Process v1.0", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Org-Process v1.01", None))
         self.labelIstd.setText(_translate("MainWindow", "ISTD Details", None))
         self.labelTestType.setText(_translate("MainWindow", "Test Type", None))
         self.labelFiles.setText(_translate("MainWindow", "Files", None))
@@ -279,6 +279,6 @@ class Ui_MainWindow(object):
         self.labelCalibrationSlope.setText(_translate("MainWindow", "Calibration Slope (m)", None))
         self.labelCalibrationIntercept.setText(_translate("MainWindow", "Calibration Intercept (c)", None))
         self.labelCalibration.setText(_translate("MainWindow", "Calibration Details", None))
-        self.label_6.setText(_translate("MainWindow", "Org-Process v1.0", None))
+        self.label_6.setText(_translate("MainWindow", "Org-Process v1.01", None))
         self.pushButtonStart.setText(_translate("MainWindow", "Start Calculation", None))
 

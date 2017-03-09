@@ -29,9 +29,9 @@ import xlrd
 import opx
 
 __author__ = 'Daniel Harris'
-__date__ = '24 February 2017'
+__date__ = '9 March 2017'
 __email__ = 'daniel.harris@dpi.nsw.gov.au'
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 
 ###############################################################################
@@ -53,6 +53,7 @@ class BlankAverage:
         areas_c10_c16 = []
         areas_c16_c34 = []
         areas_c34_c40 = []
+        areas_c10_c40 = []
 
         # For each blank item
         for blank in blank_data:
@@ -78,10 +79,14 @@ class BlankAverage:
                 i_c40 = get_fraction_end_index(blank, opx.C34_C40_END)
                 sum_c34_c40 = sum_areas(blank, i_c34, i_c40)
                 areas_c34_c40.append(sum_c34_c40)
+                # Calculate sum areas for C10-C40 fraction
+                sum_c10_c40 = sum_areas(blank, i_c10, i_c40)
+                areas_c10_c40.append(sum_c10_c40)
                 # Calculate average peak areas
                 self.area_c10_c16 = mean(areas_c10_c16)
                 self.area_c16_c34 = mean(areas_c16_c34)
                 self.area_c34_c40 = mean(areas_c34_c40)
+                self.area_c10_c40 = mean(areas_c10_c40)
 
         self.istd = mean([get_istd_area(x, istd_rt, istd_rt_tolerance, istd_area_target, istd_area_tolerance) for x in blank_data])
         self.area = None

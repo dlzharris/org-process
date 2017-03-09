@@ -28,9 +28,9 @@ import opx
 import opui
 
 __author__ = 'Daniel Harris'
-__date__ = '24 February 2017'
+__date__ = '9 March 2017'
 __email__ = 'daniel.harris@dpi.nsw.gov.au'
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 
 class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
@@ -232,12 +232,29 @@ class MainApp(opui.Ui_MainWindow, QtGui.QMainWindow):
                         istd_concentration=istd_concentration,  # USER INPUT
                         dilution_factor=dilution_factor)  # USER INPUT
 
+                    # Calculate C10-C40
+                    blank_average.area = blank_average.area_c10_c40
+                    conc_c10_c40 = op.calculate_sample_concentration(
+                        peak_data_list=peak_data,
+                        blank=blank_average,
+                        low_index=i_c10,
+                        high_index=i_c40,
+                        istd_rt=istd_rt,  # USER INPUT
+                        istd_rt_tolerance=istd_rt_tolerance,  # USER INPUT
+                        istd_area_target=istd_area_target,  # USER INPUT
+                        istd_area_tolerance=istd_area_tolerance,  # USER INPUT
+                        calibration_slope=calibration_slope,  # USER INPUT
+                        calibration_intercept=calibration_intercept,  # USER INPUT
+                        istd_concentration=istd_concentration,  # USER INPUT
+                        dilution_factor=dilution_factor)  # USER INPUT
+
                     result = {
                         'sample_name': sample_name,
                         'analysis_time': analysis_time,
                         'conc_c10_c16': conc_c10_c16,
                         'conc_c16_c34': conc_c16_c34,
-                        'conc_c34_c40': conc_c34_c40
+                        'conc_c34_c40': conc_c34_c40,
+                        'conc_c10_c40': conc_c10_c40
                     }
 
                     result_set.append(result)
